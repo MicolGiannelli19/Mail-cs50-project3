@@ -15,6 +15,7 @@ function compose_email() {
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
+  document.querySelector('#big-email').style.display = 'none';
 
   // Clear out composition fields
   document.querySelector('#compose-recipients').value = '';
@@ -60,31 +61,33 @@ function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
+  document.querySelector('#big-email').style.display = 'none';
 
+  // fetch('/emails/inbox')
+  // .then(response => response.json())
+  // .then(data => data.forEach(email => console.log(email)));
+  // .then(data => data.forEach(add_email));
+
+  // // TODO: edit something of this sort this is similar to the posts thing 
   fetch('/emails/inbox')
   .then(response => response.json())
   .then(data => data.forEach(add_email));
-  // .then(data => data.forEach(email => console.log(email)));
-  // .then(data => data.forEach(add_email));
-  // function load_emails(){
-  //   fetch('emails/inbox')
-  //   .then(response => response.json())
-  //   .then(console.log(response))
-  //   .then(emails => {
-  //     emails.forEach(add_email);
-  //   });
-  // }
-  // // TODO: edit something of this sort this is similar to the posts thing 
 
   function add_email(email){
     const email_div= document.createElement('div');
-    email_div.className = 'email';
+    email_div.className = `email ${email.read ? 'read' : 'unread'}`;
     const emailContent = `
     <p>${email.sender}</p>
     <p>${email.subject}</p>
     <p>${format_date(email.timestamp)}</p>
 `;
     email_div.innerHTML = emailContent;
+    // figure out how to pass the email id to the load_email function
+    // email_div.addEventListener('click', (email.id) => {
+    //   load_email(email.id);
+    // });
+    email_div.addEventListener('click', () => {console.log(email.id)});
+
     document.querySelector('#emails-view').appendChild(email_div);
   }
   
@@ -92,6 +95,31 @@ function load_mailbox(mailbox) {
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
 }
 
+// Add the appropiate content for the email view
+function load_email(email_id){
+  document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#compose-view').style.display = 'none';
+  document.querySelector('#big-email').style.display = 'block';
+  
+  console.log(email_id);
+}
+
+  const container = document.querySelector('#big-email');
+
+  function display_email(email){
+    let subject = document.createElement('h2');
+    let sender = document.createElement('h3');
+    let timestamp = document.createElement('h3');
+    let email_text = document.createElement('p');
+    body.innerHTML = email.body;
+    subject.innerHTML = email.subject;
+    sender.innerHTML = email.sender;
+    timestamp.innerHTML = email.timestamp;
+    container.appendChild(subject);
+    container.appendChild(sender);
+    container.appendChild(timestamp);
+    container.appendChild(email_text);
+    };
 // NOTE: this function currently doesn't work
 // TODO: fix this function
 function format_date(timestamp){

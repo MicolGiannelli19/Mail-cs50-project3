@@ -5,3 +5,5 @@ note: undefined object
 Concepts learned, Using a conbination of django and Javasctipt:
  - Using asychrounous javascript to only dynamically load the information when it is needed
   
+- Find out how to clear databases with django 
+- todo: sort out the history thing so you can go back to the right place 

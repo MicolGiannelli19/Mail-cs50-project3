@@ -68,8 +68,10 @@ function load_mailbox(mailbox) {
   // .then(data => data.forEach(email => console.log(email)));
   // .then(data => data.forEach(add_email));
 
+  //  TODO: change this to fetch diffrent mailboxes
   // // TODO: edit something of this sort this is similar to the posts thing 
-  fetch('/emails/inbox')
+  console.log(mailbox);
+  fetch(`/emails/${mailbox}`)
   .then(response => response.json())
   .then(data => data.forEach(add_email));
 
@@ -95,31 +97,53 @@ function load_mailbox(mailbox) {
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
 }
 
-// Add the appropiate content for the email view
+// TODO: find a way to run load email when an email is clicked
+
 function load_email(email_id){
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'none';
   document.querySelector('#big-email').style.display = 'block';
   
+  close_button = document.querySelector('#close-button');
+  close_button.addEventListener('click', () => {
+    console.log("closing email");
+    load_mailbox('inbox');
+  });
+
   console.log(email_id);
+  
+  fetch(`/emails/${email_id}`)
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json();
+  })
+  .then(email => {
+    console.log(email);
+    display_email(email);
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
 }
 
+function display_email(email){
   const container = document.querySelector('#big-email');
+  let subject = document.createElement('h2');
+  let sender = document.createElement('h3');
+  let timestamp = document.createElement('h3');
+  let email_text = document.createElement('p');
+  email_text.innerHTML = email.body;
+  subject.innerHTML = email.subject;
+  sender.innerHTML = email.sender;
+  timestamp.innerHTML = email.timestamp;
+  container.appendChild(subject);
+  container.appendChild(sender);
+  container.appendChild(timestamp);
+  container.appendChild(email_text);
+  };
 
-  function display_email(email){
-    let subject = document.createElement('h2');
-    let sender = document.createElement('h3');
-    let timestamp = document.createElement('h3');
-    let email_text = document.createElement('p');
-    body.innerHTML = email.body;
-    subject.innerHTML = email.subject;
-    sender.innerHTML = email.sender;
-    timestamp.innerHTML = email.timestamp;
-    container.appendChild(subject);
-    container.appendChild(sender);
-    container.appendChild(timestamp);
-    container.appendChild(email_text);
-    };
 // NOTE: this function currently doesn't work
 // TODO: fix this function
 function format_date(timestamp){

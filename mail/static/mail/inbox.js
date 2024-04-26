@@ -63,11 +63,6 @@ function load_mailbox(mailbox) {
   document.querySelector('#compose-view').style.display = 'none';
   document.querySelector('#big-email').style.display = 'none';
 
-  // fetch('/emails/inbox')
-  // .then(response => response.json())
-  // .then(data => data.forEach(email => console.log(email)));
-  // .then(data => data.forEach(add_email));
-
   //  TODO: change this to fetch diffrent mailboxes
   // // TODO: edit something of this sort this is similar to the posts thing 
   console.log(mailbox);
@@ -84,10 +79,11 @@ function load_mailbox(mailbox) {
     <p>${format_date(email.timestamp)}</p>
 `;
     email_div.innerHTML = emailContent;
+    // TODO: Add on click event to each email
     // figure out how to pass the email id to the load_email function
-    // email_div.addEventListener('click', (email.id) => {
-    //   load_email(email.id);
-    // });
+    email_div.addEventListener('click', () => {
+      load_email(email.id);
+    });
     email_div.addEventListener('click', () => {console.log(email.id)});
 
     document.querySelector('#emails-view').appendChild(email_div);

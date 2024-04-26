@@ -96,6 +96,7 @@ function load_mailbox(mailbox) {
 // TODO: find a way to run load email when an email is clicked
 
 function load_email(email_id){
+  // TODO: This function re- add all the emails each time make sure this doesn't happen
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'none';
   document.querySelector('#big-email').style.display = 'block';
@@ -108,6 +109,7 @@ function load_email(email_id){
 
   console.log(email_id);
   
+  // Empty out all the contents before running this fucntion not sure if this is the bet way tho 
   fetch(`/emails/${email_id}`)
   .then(response => {
     if (!response.ok) {

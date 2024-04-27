@@ -8,6 +8,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // By default, load the inbox
   load_mailbox('inbox');
+
+  close_button = document.querySelector('#close-button');
+  close_button.addEventListener('click', () => {
+    load_mailbox('inbox');
+  });
 });
 
 function compose_email() {
@@ -59,13 +64,16 @@ function send_email(event){
 function load_mailbox(mailbox) {
   
   // Show the mailbox and hide other views
+  console.log(document.querySelector('#emails-view').innerHTML);
+
+  document.querySelector('#emails-view').innerHTML = '';
+  console.log('printing content of div again');
+  console.log(document.querySelector('#emails-view').innerHTML);
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
   document.querySelector('#big-email').style.display = 'none';
 
-  //  TODO: change this to fetch diffrent mailboxes
   // // TODO: edit something of this sort this is similar to the posts thing 
-  console.log(mailbox);
   fetch(`/emails/${mailbox}`)
   .then(response => response.json())
   .then(data => data.forEach(add_email));
@@ -79,13 +87,13 @@ function load_mailbox(mailbox) {
     <p>${format_date(email.timestamp)}</p>
 `;
     email_div.innerHTML = emailContent;
-    // TODO: Add on click event to each email
-    // figure out how to pass the email id to the load_email function
+
+    // `On click event that allows you to open the big vie of the email 
     email_div.addEventListener('click', () => {
       load_email(email.id);
     });
-    email_div.addEventListener('click', () => {console.log(email.id)});
 
+    // Add the email to the emails-view
     document.querySelector('#emails-view').appendChild(email_div);
   }
   
@@ -100,15 +108,8 @@ function load_email(email_id){
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'none';
   document.querySelector('#big-email').style.display = 'block';
-  
-  close_button = document.querySelector('#close-button');
-  close_button.addEventListener('click', () => {
-    console.log("closing email");
-    load_mailbox('inbox');
-  });
+  document.querySelector('#big-email2').innerHTML = '';
 
-  console.log(email_id);
-  
   // Empty out all the contents before running this fucntion not sure if this is the bet way tho 
   fetch(`/emails/${email_id}`)
   .then(response => {
@@ -127,14 +128,14 @@ function load_email(email_id){
 }
 
 function display_email(email){
-  const container = document.querySelector('#big-email');
+  const container = document.querySelector('#big-email2');
   let subject = document.createElement('h2');
   let sender = document.createElement('h3');
   let timestamp = document.createElement('h3');
   let email_text = document.createElement('p');
   email_text.innerHTML = email.body;
   subject.innerHTML = email.subject;
-  sender.innerHTML = email.sender;
+  sender.innerHTML = `Sent by: ${email.sender}`;
   timestamp.innerHTML = email.timestamp;
   container.appendChild(subject);
   container.appendChild(sender);
@@ -143,7 +144,8 @@ function display_email(email){
   };
 
 // NOTE: this function currently doesn't work
-// TODO: fix this function
+// change this to not have the time in seconds 
+//  change this to say x h ago or x days ago
 function format_date(timestamp){
   const date = new Date();
   const time = new Date(timestamp)

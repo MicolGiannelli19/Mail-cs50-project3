@@ -7,3 +7,5 @@ Concepts learned, Using a conbination of django and Javasctipt:
   
 - Find out how to clear databases with django 
 - todo: sort out the history thing so you can go back to the right place 
+
+TODO: I need to fix this problem by figuring our how append child works

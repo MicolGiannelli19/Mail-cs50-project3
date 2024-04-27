@@ -13,6 +13,18 @@ document.addEventListener('DOMContentLoaded', function() {
   close_button.addEventListener('click', () => {
     load_mailbox('inbox');
   });
+
+  // Reply button
+  reply_button = document.querySelector('#reply-button');
+  reply_button.addEventListener('click', () => {
+    compose_email();
+    document.querySelector('#compose-recipients').value = document.querySelector('#big-email2').querySelector('p').innerHTML.split(' ')[2];
+    document.querySelector('#compose-subject').value = `Re: ${document.querySelector('#big-email2').querySelector('h1').innerHTML}`;
+    document.querySelector('#compose-body').value = `On: ${document.querySelector('.email-timestamp').innerHTML} \n ${document.querySelector('.email-sender').innerHTML.split(': ')[1]} wrote: ${document.querySelector('#big-email2').querySelector('.email-text').innerHTML}\n ------------ \n`;
+    document.querySelector('#compose-body').focus();
+  }
+  );
+
 });
 
 function compose_email() {
@@ -85,6 +97,8 @@ function load_mailbox(mailbox) {
     <p>${email.sender}</p>
     <p>${email.subject}</p>
     <p>${format_date(email.timestamp)}</p>
+    <p class = 'archive-button'>Archive</p>
+    
 `;
     email_div.innerHTML = emailContent;
 
@@ -96,7 +110,6 @@ function load_mailbox(mailbox) {
     // Add the email to the emails-view
     document.querySelector('#emails-view').appendChild(email_div);
   }
-  
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
 }
@@ -129,12 +142,15 @@ function load_email(email_id){
 
 function display_email(email){
   const container = document.querySelector('#big-email2');
-  let subject = document.createElement('h2');
-  let sender = document.createElement('h3');
-  let timestamp = document.createElement('h3');
+  let subject = document.createElement('h1');
+  let sender = document.createElement('p');
+  let timestamp = document.createElement('p');
   let email_text = document.createElement('p');
   email_text.innerHTML = email.body;
-  subject.innerHTML = email.subject;
+  email_text.className = 'email-text';
+  sender.className = 'email-sender';
+  timestamp.className = 'email-timestamp';
+  subject.innerHTML = toTitleCase(email.subject);
   sender.innerHTML = `Sent by: ${email.sender}`;
   timestamp.innerHTML = email.timestamp;
   container.appendChild(subject);
@@ -154,4 +170,7 @@ function format_date(timestamp){
   } else {
     return time.toLocaleDateString();
   }
+}
+function toTitleCase(text) {
+  return text.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }

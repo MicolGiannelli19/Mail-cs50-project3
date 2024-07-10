@@ -28,15 +28,17 @@
       id="compose-body"
       placeholder="Body"
     ></textarea>
-    <input type="submit" class="btn btn-primary" />
+    <input type="submit" class="btn btn-primary" value="Send" />
   </form>
 </div>
 
+<!-- This is what you get when you click on an email-->
 <div id="big-email">
   <div class="header-bar"><button id="close-button">x</button></div>
   <div id="big-email2"></div>
   <button id="reply-button">Reply</button>
 </div>
+
 {% endblock %} {% block script %}
 <script src="{% static 'mail/inbox.js' %}"></script>
 {% endblock %}

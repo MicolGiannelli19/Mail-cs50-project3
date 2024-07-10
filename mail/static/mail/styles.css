@@ -10,6 +10,9 @@ textarea {
 
 }
 
+textarea{
+    margin-bottom: 10px;
+}
 .email {
     padding-left: 3px;
     padding-right: 3px;

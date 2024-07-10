@@ -137,7 +137,7 @@ function load_mailbox(mailbox) {
       <p>${email.sender}</p>
       <p>${email.subject}</p>
       <p>${format_date(email.timestamp)}</p>
-      <p class = 'archive-button'>Archive</p>
+      <button class = 'archive-button'>Archive</button>
   `;
       // Fill in the email div 
       email_div.innerHTML = emailContent;
@@ -149,10 +149,17 @@ function load_mailbox(mailbox) {
 
       // Add the email to the emails-view
       document.querySelector('#emails-view').appendChild(email_div);
+      email_div.querySelector(".archive-button").addEventListener("click", (event)=>{
+        event.stopPropagation(); 
+        set_archived(email.id)
+        email_div.style.display = 'none' // this can definitly be done in a better way 
+      })
     }
 
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+
+  // TODO: add an if statment that if the mailbox is archived this sets the value of the archived button to un archive or something
 }
 
 
@@ -178,6 +185,7 @@ function load_email(email_id){
   .then(email => {
     console.log(email);
     document.querySelector('#big-email').dataset.emailId = email.id; // Allows me to refrence what email I am reading easily
+    mark_as_read(email.id)
     display_email(email);
   })
   .catch(error => {
@@ -211,15 +219,61 @@ function load_email(email_id){
 
     };
 
+function mark_as_read(email_id){
+  // marks the email you have written as read 
+  fetch(`/emails/${email_id}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      read: true
+    })
+  }).catch(error=>{
+    console.log(`Error: ${error}`);
+  }) 
+}
+
+function set_archived(email_id) {
+  // Fetch the current state of the email
+  fetch(`/emails/${email_id}`)
+    .then(response => response.json())
+    .then(email => {
+      // Toggle the archived status
+      const newArchivedStatus = !email.archived;
+
+      // Update the email with the new archived status
+      fetch(`/emails/${email_id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          archived: newArchivedStatus
+        })
+      }).catch(error => {
+        console.log(`Error updating archived status: ${error}`);
+      });
+    })
+    .catch(error => {
+      console.log(`Error fetching email: ${error}`);
+    });
+}
+
 // NOTE: this function currently doesn't work
 // change this to not have the time in seconds 
 //  change this to say x h ago or x days ago
+
+// TODO the only thing left to do is to check this time stamp function 
     function format_date(timestamp){
+         
       const date = new Date();
       const time = new Date(timestamp)
       if (date.getDate() === time.getDate()){
-        return time.toLocaleTimeString();
-      } else {
+
+        // const minutesPassed = date.getMinutes - time.minutesPassed
+        const hoursPassed = date.getHours() - time.getHours();
+
+        // Return the number of hours passed
+        return `${hoursPassed} hours ago`;
+      } else if (date.getDate() - time.getDate() === 1) {
+        // If the timestamp is from yesterday
+        return 'Yesterday';
+      }else {
         return time.toLocaleDateString();
       }
 }

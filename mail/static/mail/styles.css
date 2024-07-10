@@ -1,7 +1,10 @@
-textarea {
-    min-height: 400px;
-}
 
+body{
+    padding: 30px;
+}
+h3{
+    margin: 10px;
+}
 #emails-view {
     border: 3px solid black;
     display: flex;
@@ -12,6 +15,7 @@ textarea {
 
 textarea{
     margin-bottom: 10px;
+    min-height: 400px;
 }
 .email {
     padding-left: 3px;

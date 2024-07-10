@@ -3,7 +3,6 @@
 document.addEventListener('DOMContentLoaded', function() {
 
   // Use buttons to toggle between views
-  // Is their a nicer way to write thsi maybe with some data atributes and classes?
   document.querySelector('#inbox').addEventListener('click', () => load_mailbox('inbox'));
   document.querySelector('#sent').addEventListener('click', () => load_mailbox('sent'));
   document.querySelector('#archived').addEventListener('click', () => load_mailbox('archive'));
@@ -19,20 +18,49 @@ document.addEventListener('DOMContentLoaded', function() {
   // Reply button
   // Review the reply functionality shoudl be a little diffrent from compose
   reply_button = document.querySelector('#reply-button');
-  reply_button.addEventListener('click', () => {
-    compose_email();
-    document.querySelector('#compose-recipients').value = document.querySelector('#big-email2').querySelector('p').innerHTML.split(' ')[2];
-    document.querySelector('#compose-subject').value = `Re: ${document.querySelector('#big-email2').querySelector('h1').innerHTML}`;
-    document.querySelector('#compose-body').value = `On: ${document.querySelector('.email-timestamp').innerHTML} \n ${document.querySelector('.email-sender').innerHTML.split(': ')[1]} wrote: ${document.querySelector('#big-email2').querySelector('.email-text').innerHTML}\n ------------ \n`; // please make sense fo this line and write it diffrently becuase its long and illegible
-    document.querySelector('#compose-body').focus();
-  }
-  );
+
+
+  // NOTE: this shoudl probably take the email id 
+  reply_button = document.querySelector('#reply-button');
+  reply_button.addEventListener('click', async () => {
+    compose_email(); // Open the new email view
+
+    let reply_id = document.querySelector('#big-email').dataset.emailId; // Retrieve the id of the original email
+
+    try {
+      let reply_data = await email_reply_data(reply_id); // Fetch email data
+      console.log(reply_data);
+
+      // Populate the form with the data from the reply
+      document.querySelector('#compose-recipients').value = reply_data.recipients;
+      document.querySelector('#compose-subject').value = reply_data.subject;
+      document.querySelector('#compose-body').value = reply_data.body;
+      document.querySelector('#compose-body').focus();
+    } catch (error) {
+      console.error('Error fetching reply data:', error);
+    }
+  });
 
 });
 
+async function email_reply_data(email_id) {
+  try {
+    const response = await fetch(`emails/${email_id}`);
+    const email = await response.json();
+
+    console.log(email);
+
+    return {
+      recipients: email.sender,
+      subject: `Re: ${email.subject}`,
+      body: `\n\nOn ${email.timestamp}, ${email.sender} wrote:\n${email.body}\n-------\n`
+    };
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
 
 function compose_email() {
-
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
@@ -44,41 +72,42 @@ function compose_email() {
   document.querySelector('#compose-body').value = '';
   
 // TODO: create a seprate function that checks if the email is valid
-    function send_email(event){
-
-      event.preventDefault();
-
-      const recipients = document.querySelector('#compose-recipients').value ;
-      const subject = document.querySelector('#compose-subject').value;
-      const body = document.querySelector('#compose-body').value;
-
-      // TODO: check ig this woeks
-      if (recipients === '' || subject === '' || body === '') {
-          alert('Please fill out all the fields');
-      } else {
-          console.log("Sending email");
-          fetch('/emails', {
-              method: 'POST',
-              body: JSON.stringify({
-                  recipients: recipients,
-                  subject: subject,
-                  body: body
-              })
-          })
-          .then(response => response.json())
-          .then(result => {
-              // Print result
-              console.log(result);
-              window.location.reload(); // what does this do
-          })
-          .catch(error => {
-              console.error('Error:', error);
-          });
-      }
-    }
-
 
   document.querySelector('#compose-form').addEventListener('submit',(event) =>send_email(event));
+}
+
+
+function send_email(event){
+  event.preventDefault();
+
+  // Fucntionality to send email when clicking send on compose form 
+  const recipients = document.querySelector('#compose-recipients').value ; // I have some  questions about js variables ... If they are defined inside a funciton are they still valid across the whole document
+  const subject = document.querySelector('#compose-subject').value;
+  const body = document.querySelector('#compose-body').value;
+
+  // TODO: check ig this woeks
+  if (recipients === '' || subject === '' || body === '') {
+      alert('Please fill out all the fields');
+  } else {
+      console.log("Sending email");
+      fetch('/emails', {
+          method: 'POST',
+          body: JSON.stringify({
+              recipients: recipients,
+              subject: subject,
+              body: body
+          })
+      })
+      .then(response => response.json())
+      .then(result => {
+          // Print result
+          console.log(result);
+          window.location.reload(); // what does this do
+      })
+      .catch(error => {
+          console.error('Error:', error);
+      });
+  }
 }
 
 function load_mailbox(mailbox) {
@@ -86,11 +115,10 @@ function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
   console.log(document.querySelector('#emails-view').innerHTML);
 
-  // this should clear the view befor putting the new ones in 
+  // Clear the view befor putting the new ones in 
   document.querySelector('#emails-view').innerHTML = '';
 
   // Shows the emails view and hides comose and big email
-  // IDEA: What if I just made big email have a higher z value
   console.log(document.querySelector('#emails-view').innerHTML);
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
@@ -149,6 +177,7 @@ function load_email(email_id){
   })
   .then(email => {
     console.log(email);
+    document.querySelector('#big-email').dataset.emailId = email.id; // Allows me to refrence what email I am reading easily
     display_email(email);
   })
   .catch(error => {
@@ -156,37 +185,45 @@ function load_email(email_id){
   });
 }
 
-function display_email(email){
-  const container = document.querySelector('#big-email2');
-  let subject = document.createElement('h1');
-  let sender = document.createElement('p');
-  let timestamp = document.createElement('p');
-  let email_text = document.createElement('p');
-  email_text.innerHTML = email.body;
-  email_text.className = 'email-text';
-  sender.className = 'email-sender';
-  timestamp.className = 'email-timestamp';
-  subject.innerHTML = toTitleCase(email.subject);
-  sender.innerHTML = `Sent by: ${email.sender}`;
-  timestamp.innerHTML = email.timestamp;
-  container.appendChild(subject);
-  container.appendChild(sender);
-  container.appendChild(timestamp);
-  container.appendChild(email_text);
-  };
+  function display_email(email){
+
+    const container = document.querySelector('#big-email2');
+
+    let subject = document.createElement('h1');
+    let sender = document.createElement('p');
+    let timestamp = document.createElement('p');
+    let email_text = document.createElement('p');
+    
+    email_text.innerHTML = email.body;
+    email_text.className = 'email-text';
+    
+    sender.className = 'email-sender';
+    timestamp.className = 'email-timestamp';
+    
+    subject.innerHTML = toTitleCase(email.subject);
+    sender.innerHTML = `Sent by: ${email.sender}<br>`;
+    timestamp.innerHTML = `${email.timestamp}<hr>`;
+
+    container.appendChild(subject);
+    container.appendChild(sender);
+    container.appendChild(timestamp);
+    container.appendChild(email_text);
+
+    };
 
 // NOTE: this function currently doesn't work
 // change this to not have the time in seconds 
 //  change this to say x h ago or x days ago
-function format_date(timestamp){
-  const date = new Date();
-  const time = new Date(timestamp)
-  if (date.getDate() === time.getDate()){
-    return time.toLocaleTimeString();
-  } else {
-    return time.toLocaleDateString();
-  }
+    function format_date(timestamp){
+      const date = new Date();
+      const time = new Date(timestamp)
+      if (date.getDate() === time.getDate()){
+        return time.toLocaleTimeString();
+      } else {
+        return time.toLocaleDateString();
+      }
 }
+
 function toTitleCase(text) {
   return text.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }

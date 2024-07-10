@@ -12,17 +12,28 @@
 
 <div id="compose-view">
   <h3>New Email</h3>
+
   <form id="compose-form">
+
+    <!-- Meta Data -->
     <div class="form-group">
       From:
       <input disabled class="form-control" value="{{ request.user.email }}" />
     </div>
+
     <div class="form-group">
       To: <input id="compose-recipients" class="form-control" />
     </div>
+
     <div class="form-group">
       <input class="form-control" id="compose-subject" placeholder="Subject" />
     </div>
+
+    <!-- check if doinng it like this fits in with the requirments -->
+    <div id="email-history">
+      insert the email history
+   </div>
+
     <textarea
       class="form-control"
       id="compose-body"
@@ -30,10 +41,10 @@
     ></textarea>
     <input type="submit" class="btn btn-primary" value="Send" />
   </form>
+
 </div>
 
-<!-- This is what you get when you click on an email-->
-<div id="big-email">
+<div id="big-email" >
   <div class="header-bar"><button id="close-button">x</button></div>
   <div id="big-email2"></div>
   <button id="reply-button">Reply</button>

@@ -53,7 +53,7 @@ async function email_reply_data(email_id) {
     return {
       recipients: email.sender,
       subject: `Re: ${email.subject}`,
-      body: `\n\nOn ${email.timestamp}, ${email.sender} wrote:\n${email.body}\n-------\n`
+      body: `\n\nOn ${email.timestamp}, ${email.sender} wrote:\n${email.body}\n\n`
     };
   } catch (error) {
     console.error('Error:', error);
@@ -137,7 +137,7 @@ function load_mailbox(mailbox) {
       <p>${email.sender}</p>
       <p>${email.subject}</p>
       <p>${format_date(email.timestamp)}</p>
-      <button class = 'archive-button'>Archive</button>
+      <button class='archive-button'>${email.archived ? 'Unarchive' : 'Archive'}</button>
   `;
       // Fill in the email div 
       email_div.innerHTML = emailContent;
@@ -200,11 +200,7 @@ function load_email(email_id){
     let subject = document.createElement('h1');
     let sender = document.createElement('p');
     let timestamp = document.createElement('p');
-    let email_text = document.createElement('p');
-    
-    email_text.innerHTML = email.body;
-    email_text.className = 'email-text';
-    
+
     sender.className = 'email-sender';
     timestamp.className = 'email-timestamp';
     
@@ -215,7 +211,18 @@ function load_email(email_id){
     container.appendChild(subject);
     container.appendChild(sender);
     container.appendChild(timestamp);
-    container.appendChild(email_text);
+
+    const separator = '-------'
+    const parts = email.body.split(separator);
+    parts.forEach(section => {
+      const emailSection = document.createElement('p');
+      emailSection.textContent = section
+      emailSection.className = 'email-text';
+      container.appendChild(emailSection)
+      container.appendChild(document.createElement('hr'))
+    }
+
+    )
 
     };
 
@@ -266,11 +273,20 @@ function set_archived(email_id) {
       if (date.getDate() === time.getDate()){
 
         // const minutesPassed = date.getMinutes - time.minutesPassed
-        const hoursPassed = date.getHours() - time.getHours();
+
+        // this is the wrong way to calculate the time 
+        const diffMillis = date - time;
+        const minutesPassed = Math.floor(diffMillis / (1000 * 60)) - 60;
+        const hoursPassed = Math.floor(diffMillis / (1000 * 60 * 60)) - 1;
 
         // Return the number of hours passed
-        return `${hoursPassed} hours ago`;
-      } else if (date.getDate() - time.getDate() === 1) {
+          if (minutesPassed < 60){
+            // this returns 60 minutes after a minute
+            return `${minutesPassed} minutes ago`
+          }else{
+            return `${hoursPassed} hours ago`
+          }
+        }else if (date.getDate() - time.getDate() === 1) {
         // If the timestamp is from yesterday
         return 'Yesterday';
       }else {

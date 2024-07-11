@@ -53,7 +53,7 @@ async function email_reply_data(email_id) {
     return {
       recipients: email.sender,
       subject: `Re: ${email.subject}`,
-      body: `\n\nOn ${email.timestamp}, ${email.sender} wrote:\n${email.body}\n\n`
+      body: `\n\nOn ${email.timestamp}, ${email.sender} wrote:\n${email.body}\n-------\n`
     };
   } catch (error) {
     console.error('Error:', error);
